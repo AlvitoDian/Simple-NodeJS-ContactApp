@@ -29,10 +29,17 @@ if (!fs.existsSync(dataPath)) {
   });
 }; */
 
-const simpanContact = (nama, email, noHP) => {
-  const contact = { nama, email, noHP };
+const loadContact = () => {
   const fileBuffer = fs.readFileSync("data/contacts.json", "utf-8");
   const contacts = JSON.parse(fileBuffer);
+  return contacts;
+};
+
+const simpanContact = (nama, email, noHP) => {
+  const contact = { nama, email, noHP };
+  // const fileBuffer = fs.readFileSync("data/contacts.json", "utf-8");
+  // const contacts = JSON.parse(fileBuffer);
+  const contacts = loadContact();
 
   // Check Duplicate
   const duplikat = contacts.find((contact) => contact.nama === nama);
@@ -65,4 +72,50 @@ const simpanContact = (nama, email, noHP) => {
   console.log(chalk.green.inverse.bold("Terima Kasih sudah memasukkan data"));
 };
 
-module.exports = { simpanContact };
+// Function Menampilkan Semua Kontak
+const listContact = () => {
+  const contacts = loadContact();
+  console.log(chalk.cyan.inverse.bold("Daftar Kontak : "));
+  contacts.forEach((contact, i) => {
+    console.log(`${i + 1}. ${contact.nama} - ${contact.noHP}`);
+  });
+};
+
+// Function Menampilkan detail dari salah satu kontak
+const detailContact = (nama) => {
+  const contacts = loadContact();
+
+  const contact = contacts.find(
+    (contact) => contact.nama.toLowerCase() === nama.toLowerCase()
+  );
+
+  if (!contact) {
+    console.log(chalk.red.inverse.bold(`${nama} tidak ditemukan`));
+    return false;
+  }
+
+  console.log(chalk.cyan.inverse.bold("Detail dari kontak : " + contact.nama));
+  console.log(contact.noHP);
+  if (contact.email) {
+    console.log(contact.email);
+  }
+};
+
+// Function menghapus kontak berdasarkan nama
+const deleteContact = (nama) => {
+  const contacts = loadContact();
+  const newContacts = contacts.filter(
+    (contact) => contact.nama.toLowerCase() !== nama
+  );
+
+  if (contacts.length === newContacts.length) {
+    console.log(chalk.red.inverse.bold(`${nama} tidak ditemukan`));
+    return false;
+  }
+
+  fs.writeFileSync("data/contacts.json", JSON.stringify(newContacts));
+
+  console.log(chalk.cyan.inverse.bold(`Kontak ${nama} berhasil dihapus`));
+};
+
+module.exports = { simpanContact, listContact, detailContact, deleteContact };
